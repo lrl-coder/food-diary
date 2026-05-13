@@ -13,23 +13,30 @@
 
   <style>
     :root {
-      --pink: #FFD1DC;
-      --pink-deep: #F8A5B8;
-      --purple: #E8D5F5;
-      --purple-deep: #C4A8D4;
+      --peach: #FFD8C8;
+      --peach-deep: #F89870;
+      --coral: #FFE8D8;
+      --coral-deep: #E8B898;
       --mint: #C1F0DB;
       --mint-deep: #8ECFB0;
-      --yellow: #FFF5C0;
-      --yellow-deep: #F0D870;
-      --bg: #FFF5F7;
+      --golden: #FFF2D0;
+      --golden-deep: #F0C848;
+      --bg: #FFF8F4;
       --card: #FFFFFF;
-      --text: #5D4E5D;
-      --text-dim: #B8A8B8;
-      --shadow: 0 2px 12px rgba(200, 160, 180, 0.15);
+      --text: #5D4D45;
+      --text-dim: #B8A898;
+      --shadow: 0 2px 12px rgba(200, 160, 140, 0.15);
       --radius: 20px;
       --radius-sm: 12px;
       --nav-height: 72px;
       --safe-bottom: env(safe-area-inset-bottom, 8px);
+      /* Legacy aliases for compatibility */
+      --pink: var(--peach);
+      --pink-deep: var(--peach-deep);
+      --purple: var(--coral);
+      --purple-deep: var(--coral-deep);
+      --yellow: var(--golden);
+      --yellow-deep: var(--golden-deep);
     }
 
     * {
@@ -63,7 +70,7 @@
       padding: 12px 20px;
       text-align: center;
       flex-shrink: 0;
-      box-shadow: 0 2px 16px rgba(255, 180, 200, 0.25);
+      box-shadow: 0 2px 16px rgba(248, 152, 112, 0.25);
       position: relative;
       z-index: 10;
     }
@@ -100,10 +107,10 @@
       justify-content: space-around;
       align-items: center;
       background: var(--card);
-      border-top: 1px solid rgba(200, 180, 200, 0.2);
+      border-top: 1px solid rgba(200, 170, 150, 0.2);
       padding: 8px 8px calc(8px + var(--safe-bottom));
       flex-shrink: 0;
-      box-shadow: 0 -2px 12px rgba(200, 160, 180, 0.1);
+      box-shadow: 0 -2px 12px rgba(200, 160, 140, 0.1);
     }
 
     nav .nav-item {
@@ -129,7 +136,7 @@
 
     nav .nav-item.active {
       color: var(--pink-deep);
-      background: rgba(255, 200, 210, 0.2);
+      background: rgba(248, 152, 112, 0.18);
     }
 
     /* Cards */
@@ -169,7 +176,7 @@
       align-items: center;
       gap: 10px;
       padding: 10px 12px;
-      background: linear-gradient(135deg, #FFF5F9, #F8F4FF);
+      background: linear-gradient(135deg, #FFF8F2, #FFF5ED);
       border-radius: var(--radius-sm);
       margin-bottom: 8px;
     }
@@ -215,7 +222,7 @@
       justify-content: space-around;
       align-items: center;
       padding: 14px 16px;
-      background: linear-gradient(135deg, var(--yellow), #FFF0E0);
+      background: linear-gradient(135deg, var(--golden), #FFF2E0);
       border-radius: var(--radius);
       margin-bottom: 16px;
       box-shadow: var(--shadow);
@@ -228,7 +235,7 @@
     .summary-bar .num {
       font-size: 1.5rem;
       font-weight: 800;
-      color: #E8985E;
+      color: #E89050;
     }
 
     .summary-bar .label {
@@ -259,7 +266,7 @@
       font-weight: 600;
       font-size: 0.82rem;
       margin-bottom: 4px;
-      color: #8B7B8B;
+      color: #8B7565;
     }
 
     .form-group input,
@@ -267,11 +274,11 @@
     .form-group textarea {
       width: 100%;
       padding: 12px 14px;
-      border: 2px solid #F0E0EC;
+      border: 2px solid #F0E0D8;
       border-radius: var(--radius-sm);
       font-size: 0.9rem;
       font-family: inherit;
-      background: #FFFAFC;
+      background: #FFFCF8;
       color: var(--text);
       outline: none;
       transition: 0.2s;
@@ -311,10 +318,10 @@
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, var(--pink-deep), #F590A8);
+      background: linear-gradient(135deg, #F89870, #F08060);
       color: #fff;
       width: 100%;
-      box-shadow: 0 4px 16px rgba(248, 165, 184, 0.35);
+      box-shadow: 0 4px 16px rgba(248, 152, 112, 0.35);
     }
 
     .btn-outline {
@@ -354,7 +361,7 @@
       border-radius: 20px;
       font-size: 0.78rem;
       font-weight: 600;
-      color: #C89040;
+      color: #D89040;
     }
 
     /* Meal type chips */
@@ -367,7 +374,7 @@
     .meal-chip {
       padding: 8px 16px;
       border-radius: 20px;
-      border: 2px solid #F0E0EC;
+      border: 2px solid #F0E0D8;
       background: #fff;
       cursor: pointer;
       font-size: 0.8rem;
@@ -475,11 +482,11 @@
     }
 
     .stat-card.pink {
-      background: linear-gradient(135deg, #FFF0F4, #FFE8F0);
+      background: linear-gradient(135deg, #FFF2ED, #FFECE4);
     }
 
     .stat-card.purple {
-      background: linear-gradient(135deg, #F8F0FF, #F0E8FF);
+      background: linear-gradient(135deg, #FFF5ED, #FFF0E4);
     }
 
     .stat-card.mint {
@@ -524,7 +531,7 @@
     .top-food .bar-wrap {
       flex: 1;
       height: 20px;
-      background: #F0E8F0;
+      background: #F0E8E0;
       border-radius: 10px;
       overflow: hidden;
     }
@@ -723,7 +730,7 @@
 
     /* Result card */
     .result-card {
-      background: linear-gradient(135deg, #F0FFF4, #FFF5F0);
+      background: linear-gradient(135deg, #F5FFF8, #FFF8F0);
       border: 1.5px solid var(--mint-deep);
       border-radius: var(--radius-sm);
       padding: 14px;
@@ -1207,11 +1214,14 @@ mealType: breakfast/lunch/dinner/snack/supper` },
       if (entries.length === 0) {
         html = `
       <div class="empty-state">
-        <span class="big-emoji">🍽️</span>
+        <img src="assets/empty_state.png" alt="今天吃什么？" class="mascot-img" style="width:180px;height:180px;border-radius:16px;object-fit:cover;margin-bottom:12px;">
         <p>今天还没有记录哦~</p>
         <p style="font-size:0.8rem;margin-top:4px;">点击下方「记录」开始吧 (๑•̀ㅂ•́)و✧</p>
       </div>`;
       } else {
+        html += `<div style="text-align:center;margin-bottom:12px;">
+      <img src="assets/hero_banner.png" alt="" class="mascot-img" style="width:120px;height:120px;border-radius:16px;object-fit:cover;">
+    </div>`;
         html += `<div class="summary-bar">
       <div class="stat"><div class="num">${entries.length}</div><div class="label">今天餐次</div></div>
       <div class="stat"><div class="num">${totalCal}</div><div class="label">估算热量/kcal</div></div>
@@ -1274,6 +1284,9 @@ mealType: breakfast/lunch/dinner/snack/supper` },
       const hasKey = !!getApiKey();
 
       main.innerHTML = `
+    <div style="text-align:center;margin-bottom:12px;">
+      <img src="assets/record_food.png" alt="" class="mascot-img" style="width:120px;height:120px;border-radius:16px;object-fit:cover;">
+    </div>
     <!-- Photo capture area -->
     <div class="card" style="text-align:center;">
       <div style="font-size:3rem;margin-bottom:8px;" id="photoIcon">📸</div>
@@ -1459,7 +1472,10 @@ mealType: breakfast/lunch/dinner/snack/supper` },
       // Day labels
       const dayLabels = ['日', '一', '二', '三', '四', '五', '六'];
 
-      let html = `<div class="card">
+      let html = `<div style="text-align:center;margin-bottom:12px;">
+      <img src="assets/calendar_plan.png" alt="" class="mascot-img" style="width:120px;height:120px;border-radius:16px;object-fit:cover;">
+    </div>
+    <div class="card">
     <div style="text-align:center;font-weight:700;margin-bottom:10px;">${year}年${month + 1}月</div>
     <div class="calendar-mini">`;
 
@@ -1480,7 +1496,7 @@ mealType: breakfast/lunch/dinner/snack/supper` },
       // History list for selected date
       const entries = await getEntriesByDate(historyViewDate);
       if (entries.length === 0) {
-        html += `<div class="empty-state"><span class="big-emoji">🍃</span><p>这天没有记录</p></div>`;
+        html += `<div class="empty-state"><img src="assets/empty_state.png" alt="" class="mascot-img" style="width:140px;height:140px;border-radius:16px;object-fit:cover;margin-bottom:12px;"><p>这天没有记录</p></div>`;
       } else {
         let dayCal = 0;
         for (const e of entries) {
@@ -1536,7 +1552,10 @@ mealType: breakfast/lunch/dinner/snack/supper` },
       const avgCal = activeDays > 0 ? Math.round(totalCal / activeDays) : 0;
 
       // Week nav
-      let html = `<div class="card">
+      let html = `<div style="text-align:center;margin-bottom:12px;">
+      <img src="assets/stats_report.png" alt="" class="mascot-img" style="width:120px;height:120px;border-radius:16px;object-fit:cover;">
+    </div>
+    <div class="card">
     <div class="week-nav">
       <button class="arrow" onclick="changeWeek(-1)">◀</button>
       <span class="week-title">${start} ~ ${end}</span>
@@ -1559,7 +1578,7 @@ mealType: breakfast/lunch/dinner/snack/supper` },
         const dayCal = dayEntries.reduce((s, e) => s + (e.calories || 0), 0);
         const dayLabel = ['日', '一', '二', '三', '四', '五', '六'][d.getDay()];
         const indicator = dayEntries.length === 0 ? '🫥' : dayCal > 2000 ? '😋' : dayCal > 1000 ? '😊' : '🫣';
-        html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #F8F0F8;">
+        html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #F8F0E8;">
       <span>${ds} 周${dayLabel}</span>
       <span>${indicator} ${dayEntries.length}餐 · ${dayCal} kcal</span>
     </div>`;
