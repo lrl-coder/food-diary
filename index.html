@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>饮食日记 ♡</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="饮食日记">
+  <meta name="theme-color" content="#FFD1DC">
+  <link rel="manifest" href="data:application/json,{}">
+
+  <style>
+    :root {
+      --pink: #FFD1DC;
+      --pink-deep: #F8A5B8;
+      --purple: #E8D5F5;
+      --purple-deep: #C4A8D4;
+      --mint: #C1F0DB;
+      --mint-deep: #8ECFB0;
+      --yellow: #FFF5C0;
+      --yellow-deep: #F0D870;
+      --bg: #FFF5F7;
+      --card: #FFFFFF;
+      --text: #5D4E5D;
+      --text-dim: #B8A8B8;
+      --shadow: 0 2px 12px rgba(200, 160, 180, 0.15);
+      --radius: 20px;
+      --radius-sm: 12px;
+      --nav-height: 72px;
+      --safe-bottom: env(safe-area-inset-bottom, 8px);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 16px;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Header */
+    header {
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      padding: 12px 20px;
+      text-align: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 16px rgba(255, 180, 200, 0.25);
+      position: relative;
+      z-index: 10;
+    }
+
+    header h1 {
+      font-size: 1.35rem;
+      color: #fff;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    header .sub {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.8);
+      margin-top: 2px;
+    }
+
+    /* Main content */
+    main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 16px 8px;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    main::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Bottom Nav */
+    nav {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      background: var(--card);
+      border-top: 1px solid rgba(200, 180, 200, 0.2);
+      padding: 8px 8px calc(8px + var(--safe-bottom));
+      flex-shrink: 0;
+      box-shadow: 0 -2px 12px rgba(200, 160, 180, 0.1);
+    }
+
+    nav .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 6px 14px;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      border: none;
+      background: none;
+      font-family: inherit;
+    }
+
+    nav .nav-item .icon {
+      font-size: 1.5rem;
+      line-height: 1;
+    }
+
+    nav .nav-item.active {
+      color: var(--pink-deep);
+      background: rgba(255, 200, 210, 0.2);
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 12px;
+      animation: cardIn 0.35s ease-out;
+    }
+
+    @keyframes cardIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .meal-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    /* Food entry row */
+    .food-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: linear-gradient(135deg, #FFF5F9, #F8F4FF);
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+    }
+
+    .food-row .emoji-big {
+      font-size: 2rem;
+      flex-shrink: 0;
+    }
+
+    .food-row .info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .food-row .name {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .food-row .meta {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+    }
+
+    .food-row .cal {
+      font-weight: 700;
+      color: var(--pink-deep);
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+
+    .food-row .photo {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    /* Summary bar */
+    .summary-bar {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 14px 16px;
+      background: linear-gradient(135deg, var(--yellow), #FFF0E0);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .summary-bar .stat {
+      text-align: center;
+    }
+
+    .summary-bar .num {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #E8985E;
+    }
+
+    .summary-bar .label {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-dim);
+    }
+
+    .empty-state .big-emoji {
+      font-size: 4rem;
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    /* Form */
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.82rem;
+      margin-bottom: 4px;
+      color: #8B7B8B;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid #F0E0EC;
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      font-family: inherit;
+      background: #FFFAFC;
+      color: var(--text);
+      outline: none;
+      transition: 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--pink-deep);
+      background: #fff;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: 0.2s;
+      font-family: inherit;
+      letter-spacing: 0.5px;
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--pink-deep), #F590A8);
+      color: #fff;
+      width: 100%;
+      box-shadow: 0 4px 16px rgba(248, 165, 184, 0.35);
+    }
+
+    .btn-outline {
+      background: #fff;
+      color: var(--pink-deep);
+      border: 2px solid var(--pink);
+      width: 100%;
+    }
+
+    .btn-small {
+      padding: 6px 14px;
+      font-size: 0.75rem;
+      border-radius: 16px;
+    }
+
+    /* Photo preview */
+    .photo-preview {
+      width: 100%;
+      max-height: 200px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .photo-preview.has-photo {
+      display: block;
+    }
+
+    /* Calorie estimate badge */
+    .cal-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 12px;
+      background: var(--yellow);
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #C89040;
+    }
+
+    /* Meal type chips */
+    .meal-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .meal-chip {
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 2px solid #F0E0EC;
+      background: #fff;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: 0.2s;
+      font-family: inherit;
+      color: var(--text);
+    }
+
+    .meal-chip.selected {
+      border-color: var(--pink-deep);
+      background: var(--pink);
+    }
+
+    /* Calendar mini */
+    .calendar-mini {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      text-align: center;
+    }
+
+    .calendar-mini .day-label {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      padding: 4px 0;
+    }
+
+    .calendar-mini .day-cell {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .calendar-mini .day-cell:hover {
+      background: var(--pink);
+    }
+
+    .calendar-mini .day-cell.has-record {
+      background: var(--pink);
+      font-weight: 700;
+      color: var(--pink-deep);
+    }
+
+    .calendar-mini .day-cell.today {
+      border: 2px solid var(--pink-deep);
+    }
+
+    .calendar-mini .day-cell.selected {
+      background: var(--pink-deep);
+      color: #fff;
+    }
+
+    /* Week selector */
+    .week-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .week-nav .week-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .week-nav .arrow {
+      font-size: 1.2rem;
+      padding: 6px 12px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text);
+    }
+
+    /* Stats cards */
+    .stat-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 14px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-card .big {
+      font-size: 1.8rem;
+      font-weight: 800;
+    }
+
+    .stat-card .lbl {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    .stat-card.pink {
+      background: linear-gradient(135deg, #FFF0F4, #FFE8F0);
+    }
+
+    .stat-card.purple {
+      background: linear-gradient(135deg, #F8F0FF, #F0E8FF);
+    }
+
+    .stat-card.mint {
+      background: linear-gradient(135deg, #F0FFF8, #E8FFF0);
+    }
+
+    .stat-card.yellow {
+      background: linear-gradient(135deg, #FFFEF0, #FFF8E8);
+    }
+
+    /* Top foods */
+    .top-food {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+    }
+
+    .top-food .rank {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.8rem;
+    }
+
+    .top-food .rank.gold {
+      background: #FFE082;
+    }
+
+    .top-food .rank.silver {
+      background: #E0E0E0;
+    }
+
+    .top-food .rank.bronze {
+      background: #FFCC80;
+    }
+
+    .top-food .bar-wrap {
+      flex: 1;
+      height: 20px;
+      background: #F0E8F0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .top-food .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--pink-deep), var(--purple-deep));
+      border-radius: 10px;
+      transition: width 0.5s;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 8px;
+      font-size: 0.65rem;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #5D4E5D;
+      color: #fff;
+      padding: 10px 24px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+
+    /* Page containers */
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    /* Back button */
+    .back-btn {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.25);
+      border: none;
+      color: #fff;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Date header */
+    .date-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .date-header .date-text {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .date-header button {
+      background: none;
+      border: none;
+      font-size: 1.1rem;
+      cursor: pointer;
+      color: var(--text);
+      padding: 4px 8px;
+    }
+
+    /* Settings gear */
+    .settings-gear {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.25);
+      border: none;
+      color: #fff;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
+    }
+
+    .settings-gear:active {
+      transform: translateY(-50%) scale(0.9);
+    }
+
+    /* Modal overlay */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.35);
+      z-index: 100;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal-sheet {
+      background: var(--card);
+      border-radius: 24px 24px 0 0;
+      padding: 24px 20px calc(20px + var(--safe-bottom));
+      width: 100%;
+      max-width: 480px;
+      animation: slideUp 0.3s ease-out;
+      box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(100%);
+      }
+
+      to {
+        transform: translateY(0);
+      }
+    }
+
+    .modal-sheet h3 {
+      font-size: 1rem;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .modal-sheet .form-group label {
+      font-size: 0.78rem;
+    }
+
+    /* Analyze button */
+    .btn-analyze {
+      background: linear-gradient(135deg, #A78BFA, #C084FC);
+      color: #fff;
+      width: 100%;
+      margin-top: 8px;
+      box-shadow: 0 4px 16px rgba(167, 139, 250, 0.35);
+    }
+
+    .btn-analyze:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Loading spinner */
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Result card */
+    .result-card {
+      background: linear-gradient(135deg, #F0FFF4, #FFF5F0);
+      border: 1.5px solid var(--mint-deep);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      margin: 12px 0;
+      animation: cardIn 0.35s ease-out;
+    }
+
+    .result-card .food-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #5D8A6E;
+    }
+
+    .result-card .detail {
+      font-size: 0.8rem;
+      color: #8B9B8B;
+      margin-top: 4px;
+    }
+
+    /* API status badge */
+    .api-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .api-badge.set {
+      background: #D4F5E0;
+      color: #4A8A5E;
+    }
+
+    .api-badge.unset {
+      background: #FFE8E0;
+      color: #C87050;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div style="position:relative;">
+      <h1 id="headerTitle">(｡•ᴗ-)✧ 饮食日记</h1>
+      <div class="sub" id="headerSub"></div>
+      <button class="settings-gear" onclick="openSettings()" title="设置">⚙️</button>
+    </div>
+  </header>
+
+  <main id="mainContent"></main>
+
+  <nav>
+    <button class="nav-item active" data-nav="today">
+      <span class="icon">📔</span> 今日
+    </button>
+    <button class="nav-item" data-nav="add">
+      <span class="icon">🍽️</span> 记录
+    </button>
+    <button class="nav-item" data-nav="calendar">
+      <span class="icon">📅</span> 日历
+    </button>
+    <button class="nav-item" data-nav="stats">
+      <span class="icon">📊</span> 周报
+    </button>
+  </nav>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-sheet">
+      <h3>⚙️ 设置</h3>
+      <div class="form-group">
+        <label>OpenAI API Key</label>
+        <input type="password" id="apiKeyInput" placeholder="sk-..." autocomplete="off">
+        <div style="margin-top:6px;font-size:0.72rem;color:var(--text-dim);">
+          用于 GPT-5 Nano 识别食物照片。Key 只保存在你的浏览器里。
+        </div>
+        <div id="apiKeyStatus" style="margin-top:6px;"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn btn-outline" style="flex:1;" onclick="closeSettings()">取消</button>
+        <button class="btn" style="flex:1;background:linear-gradient(135deg,#A78BFA,#C084FC);color:#fff;"
+          onclick="saveApiKey()">💾 保存</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ─────────────────────────────────────
+    // IndexedDB
+    // ─────────────────────────────────────
+    const DB_NAME = 'FoodDiaryDB'; const DB_VER = 1;
+    function openDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, DB_VER);
+        req.onupgradeneeded = e => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains('entries')) {
+            const store = db.createObjectStore('entries', { keyPath: 'id', autoIncrement: true });
+            store.createIndex('date', 'date', { unique: false });
+            store.createIndex('mealType', 'mealType', { unique: false });
+          }
+        };
+        req.onsuccess = e => resolve(e.target.result);
+        req.onerror = e => reject(e.target.error);
+      });
+    }
+
+    async function addEntry(entry) {
+      const db = await openDB();
+      return new Promise((res, rej) => {
+        const tx = db.transaction('entries', 'readwrite');
+        tx.objectStore('entries').add(entry);
+        tx.oncomplete = () => res();
+        tx.onerror = e => rej(e.target.error);
+      });
+    }
+
+    async function getEntriesByDate(dateStr) {
+      const db = await openDB();
+      return new Promise((res, rej) => {
+        const tx = db.transaction('entries', 'readonly');
+        const idx = tx.objectStore('entries').index('date');
+        const req = idx.getAll(dateStr);
+        req.onsuccess = () => res(req.result);
+        req.onerror = e => rej(e.target.error);
+      });
+    }
+
+    async function getAllDates() {
+      const db = await openDB();
+      return new Promise((res, rej) => {
+        const tx = db.transaction('entries', 'readonly');
+        const req = tx.objectStore('entries').getAll();
+        req.onsuccess = () => {
+          const dates = [...new Set(req.result.map(e => e.date))].sort();
+          res(dates);
+        };
+        req.onerror = e => rej(e.target.error);
+      });
+    }
+
+    async function getRangeEntries(start, end) {
+      const db = await openDB();
+      return new Promise((res, rej) => {
+        const tx = db.transaction('entries', 'readonly');
+        const idx = tx.objectStore('entries').index('date');
+        const range = IDBKeyRange.bound(start, end);
+        const req = idx.getAll(range);
+        req.onsuccess = () => res(req.result);
+        req.onerror = e => rej(e.target.error);
+      });
+    }
+
+    async function deleteEntry(id) {
+      const db = await openDB();
+      return new Promise((res, rej) => {
+        const tx = db.transaction('entries', 'readwrite');
+        tx.objectStore('entries').delete(id);
+        tx.oncomplete = () => res();
+        tx.onerror = e => rej(e.target.error);
+      });
+    }
+
+    // ─────────────────────────────────────
+    // Nutrition Estimator
+    // ─────────────────────────────────────
+    const FOOD_DB = {
+      '米饭': 200, '面条': 350, '馒头': 220, '面包': 120, '包子': 200, '饺子': 260, '馄饨': 220, '粥': 120, '粽子': 280,
+      '鸡蛋': 70, '牛奶': 150, '豆浆': 60, '酸奶': 120, '奶酪': 280,
+      '鸡胸肉': 160, '鸡腿': 220, '鸡翅': 280, '猪肉': 350, '牛肉': 250, '羊肉': 300, '排骨': 320, '鱼': 120, '虾': 100, '三文鱼': 200,
+      '番茄': 20, '黄瓜': 15, '生菜': 12, '菠菜': 25, '西兰花': 35, '胡萝卜': 35, '土豆': 80, '玉米': 100, '红薯': 90, '南瓜': 25,
+      '苹果': 80, '香蕉': 100, '橙子': 60, '葡萄': 70, '草莓': 35, '西瓜': 30, '蓝莓': 55, '猕猴桃': 55,
+      '蛋糕': 350, '巧克力': 550, '饼干': 450, '冰淇淋': 200, '布丁': 150, '甜甜圈': 350,
+      '咖啡': 5, '茶': 2, '奶茶': 350, '可乐': 140, '果汁': 120, '奶昔': 300, '拿铁': 150,
+      '火锅': 800, '烧烤': 700, '炸鸡': 450, '汉堡': 500, '薯条': 350, '披萨': 500, '寿司': 350, '沙拉': 150, '三明治': 350, '炒饭': 450, '炒面': 400,
+      '豆腐': 80, '毛豆': 120, '花生': 560, '腰果': 550, '核桃': 650,
+    };
+    function estimateCalories(foodName) {
+      let best = null;
+      for (const [k, v] of Object.entries(FOOD_DB)) {
+        if (foodName.includes(k)) {
+          if (!best || k.length > best[0].length) best = [k, v];
+        }
+      }
+      return best ? best[1] : null;
+    }
+
+    // ─────────────────────────────────────
+    // Helpers
+    // ─────────────────────────────────────
+    const MEAL_TYPES = [
+      { key: 'breakfast', label: '🌅 早餐', emoji: '🌅' },
+      { key: 'lunch', label: '☀️ 午餐', emoji: '☀️' },
+      { key: 'snack', label: '🌤 加餐', emoji: '🌤' },
+      { key: 'dinner', label: '🌙 晚餐', emoji: '🌙' },
+      { key: 'supper', label: '🌛 夜宵', emoji: '🌛' },
+    ];
+    const MEAL_EMOJI = Object.fromEntries(MEAL_TYPES.map(m => [m.key, m.emoji]));
+    const MEAL_LABEL = Object.fromEntries(MEAL_TYPES.map(m => [m.key, m.label]));
+
+    const FOOD_EMOJI = ['🍚', '🍜', '🍞', '🥟', '🥩', '🍗', '🐟', '🦐', '🥬', '🥗', '🍅', '🥑', '🍎', '🍓', '🍊', '🍰', '🍩', '🧁', '🍫', '🥛', '☕', '🍵', '🧋', '🍲', '🥘', '🍛', '🍣', '🥪', '🥗', '🍿', '🧃'];
+    function randEmoji(food) {
+      if (food.includes('面')) return '🍜'; if (food.includes('饭')) return '🍚';
+      if (food.includes('鸡')) return '🍗'; if (food.includes('鱼')) return '🐟';
+      if (food.includes('虾')) return '🦐'; if (food.includes('牛')) return '🥩';
+      if (food.includes('猪')) return '🥩'; if (food.includes('蛋')) return '🥚';
+      if (food.includes('奶')) return '🥛'; if (food.includes('咖')) return '☕';
+      if (food.includes('茶')) return '🍵'; if (food.includes('果')) return '🍎';
+      if (food.includes('蔬') || food.includes('菜')) return '🥬';
+      if (food.includes('蛋')) return '🍰'; if (food.includes('甜')) return '🧁';
+      if (food.includes('火')) return '🍲'; if (food.includes('堡')) return '🍔';
+      return FOOD_EMOJI[Math.floor(Math.random() * FOOD_EMOJI.length)];
+    }
+
+    const todayStr = () => new Date().toISOString().split('T')[0];
+    const nowTime = () => {
+      const d = new Date();
+      return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    };
+    function formatDate(d) {
+      const dd = new Date(d);
+      return `${dd.getFullYear()}年${dd.getMonth() + 1}月${dd.getDate()}日`;
+    }
+    function guessMealType() {
+      const h = new Date().getHours();
+      if (h < 10) return 'breakfast'; if (h < 13) return 'lunch';
+      if (h < 17) return 'snack'; if (h < 21) return 'dinner'; return 'supper';
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2000);
+    }
+
+    // ─────────────────────────────────────
+    // Settings & API Key
+    // ─────────────────────────────────────
+    function getApiKey() { return localStorage.getItem('openai_api_key') || ''; }
+
+    function openSettings() {
+      document.getElementById('apiKeyInput').value = getApiKey();
+      updateApiKeyStatus();
+      document.getElementById('settingsModal').classList.add('show');
+    }
+    function closeSettings() {
+      document.getElementById('settingsModal').classList.remove('show');
+    }
+    function saveApiKey() {
+      const key = document.getElementById('apiKeyInput').value.trim();
+      localStorage.setItem('openai_api_key', key);
+      updateApiKeyStatus();
+      showToast(key ? 'API Key 已保存 ✨' : 'API Key 已清除');
+      closeSettings();
+    }
+    function updateApiKeyStatus() {
+      const key = getApiKey();
+      const el = document.getElementById('apiKeyStatus');
+      el.innerHTML = key
+        ? '<span class="api-badge set">✅ 已设置</span>'
+        : '<span class="api-badge unset">⚠️ 未设置 — 拍照识别需要 API Key</span>';
+    }
+    document.getElementById('settingsModal').addEventListener('click', function (e) {
+      if (e.target === this) closeSettings();
+    });
+
+    // ─────────────────────────────────────
+    // OpenAI Food Recognition
+    // ─────────────────────────────────────
+    async function analyzeFoodPhoto(imageBase64) {
+      const apiKey = getApiKey();
+      if (!apiKey) { showToast('请先在设置里填写 API Key 哦~ ⚙️'); return null; }
+
+      try {
+        const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: 'gpt-5-nano',
+            messages: [{
+              role: 'user',
+              content: [
+                { type: 'text', text: '这是一张食物照片。请识别食物并估算信息。只返回纯JSON，不要其他文字。格式：{"food":"食物中文名","amount":"份量描述（如一碗/一份/两个）","calories":数字,"mealType":"breakfast/lunch/snack/dinner/supper"}' },
+                { type: 'image_url', image_url: { url: imageBase64 } }
+              ]
+            }],
+            max_completion_tokens: 10000,
+          })
+        });
+
+        if (!resp.ok) {
+          const err = await resp.text();
+          console.error('OpenAI error:', err);
+          showToast('识别失败，检查 API Key 或网络~ (｡•́︿•̀｡)');
+          return null;
+        }
+
+        const data = await resp.json();
+        const text = data.choices?.[0]?.message?.content || '';
+        // Extract JSON from response
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) { showToast('LLM 返回格式异常，请重试~'); return null; }
+
+        const result = JSON.parse(jsonMatch[0]);
+        // Validate
+        if (!result.food) { showToast('未能识别食物，请重新拍照~'); return null; }
+        return {
+          food: result.food,
+          amount: result.amount || '一份',
+          calories: result.calories || 200,
+          mealType: ['breakfast', 'lunch', 'snack', 'dinner', 'supper'].includes(result.mealType)
+            ? result.mealType : guessMealType()
+        };
+      } catch (e) {
+        console.error('Analyze error:', e);
+        showToast('网络错误，请稍后重试~ (｡•́︿•̀｡)');
+        return null;
+      }
+    }
+
+    // ─────────────────────────────────────
+    // Navigation
+    // ─────────────────────────────────────
+    let currentPage = 'today';
+    let selectedDate = todayStr();
+    let historyViewDate = todayStr();
+    let statsWeekOffset = 0;
+
+    document.querySelectorAll('.nav-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const page = btn.dataset.nav;
+        navigateTo(page);
+      });
+    });
+
+    function navigateTo(page) {
+      currentPage = page;
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      document.querySelector(`[data-nav="${page}"]`).classList.add('active');
+      renderPage(page);
+    }
+
+    function renderPage(page) {
+      const main = document.getElementById('mainContent');
+      switch (page) {
+        case 'today': renderToday(main); break;
+        case 'add': renderAdd(main); break;
+        case 'calendar': renderCalendar(main); break;
+        case 'stats': renderStats(main); break;
+      }
+    }
+
+    // ─────────────────────────────────────
+    // Today Page
+    // ─────────────────────────────────────
+    async function renderToday(main) {
+      document.getElementById('headerTitle').textContent = '(｡•ᴗ-)✧ 饮食日记';
+      document.getElementById('headerSub').textContent = formatDate(todayStr());
+
+      const entries = await getEntriesByDate(todayStr());
+      const grouped = {}; let totalCal = 0;
+      for (const e of entries) {
+        grouped[e.mealType] = grouped[e.mealType] || [];
+        grouped[e.mealType].push(e);
+        totalCal += e.calories || 0;
+      }
+
+      let html = '';
+      if (entries.length === 0) {
+        html = `
+      <div class="empty-state">
+        <span class="big-emoji">🍽️</span>
+        <p>今天还没有记录哦~</p>
+        <p style="font-size:0.8rem;margin-top:4px;">点击下方「记录」开始吧 (๑•̀ㅂ•́)و✧</p>
+      </div>`;
+      } else {
+        html += `<div class="summary-bar">
+      <div class="stat"><div class="num">${entries.length}</div><div class="label">今天餐次</div></div>
+      <div class="stat"><div class="num">${totalCal}</div><div class="label">估算热量/kcal</div></div>
+      <div class="stat"><div class="num" style="font-size:1.1rem;line-height:1.4;">${getFoodEmojis(entries)}</div><div class="label">今日美食</div></div>
+    </div>`;
+
+        const mealOrder = ['breakfast', 'lunch', 'snack', 'dinner', 'supper'];
+        for (const mt of mealOrder) {
+          if (!grouped[mt]) continue;
+          html += `<div class="card">
+        <div class="meal-header">${MEAL_EMOJI[mt]} ${MEAL_LABEL[mt]} · ${grouped[mt].length} 项</div>`;
+          for (const e of grouped[mt]) {
+            html += `
+        <div class="food-row">
+          <span class="emoji-big">${randEmoji(e.food)}</span>
+          <div class="info">
+            <div class="name">${e.food}</div>
+            <div class="meta">${e.time} · ${e.amount || ''}</div>
+          </div>
+          ${e.photo ? `<img class="photo" src="${e.photo}" alt="">` : ''}
+          <div class="cal">${e.calories} kcal</div>
+          <button onclick="removeEntry(${e.id})" style="background:none;border:none;cursor:pointer;font-size:0.7rem;padding:4px;flex-shrink:0;" title="删除">🗑️</button>
+        </div>`;
+          }
+          html += '</div>';
+        }
+      }
+      main.innerHTML = html;
+    }
+
+    function getFoodEmojis(entries) {
+      const emojis = [];
+      const seen = new Set();
+      for (const e of entries) {
+        const em = randEmoji(e.food);
+        if (!seen.has(em)) { seen.add(em); emojis.push(em); }
+        if (emojis.length >= 5) break;
+      }
+      return emojis.join('') || '🍽️';
+    }
+
+    async function removeEntry(id) {
+      if (!confirm('确定要删除这条记录吗？(｡•́︿•̀｡)')) return;
+      await deleteEntry(id);
+      showToast('已删除~');
+      renderPage('today');
+    }
+
+    // ─────────────────────────────────────
+    // Add Page (Photo-first)
+    // ─────────────────────────────────────
+    let pendingAnalysis = null; // LLM result awaiting user confirmation
+
+    function renderAdd(main) {
+      document.getElementById('headerTitle').textContent = '🍽️ 记录美食';
+      document.getElementById('headerSub').textContent = '拍照自动识别，超方便~';
+      pendingAnalysis = null;
+
+      const defaultMeal = guessMealType();
+      const hasKey = !!getApiKey();
+
+      main.innerHTML = `
+    <!-- Photo capture area -->
+    <div class="card" style="text-align:center;">
+      <div style="font-size:3rem;margin-bottom:8px;" id="photoIcon">📸</div>
+      <div style="font-weight:700;margin-bottom:4px;">拍下你的美食吧</div>
+      <div style="font-size:0.75rem;color:var(--text-dim);margin-bottom:12px;">AI 会自动识别食物和热量~</div>
+      <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none;">
+      <button class="btn btn-outline" type="button" onclick="document.getElementById('photoInput').click()">
+        📷 拍照或选择图片
+      </button>
+      <img class="photo-preview" id="photoPreview" alt="" style="max-height:220px;margin:12px auto 0;">
+      <input type="hidden" id="photoData" value="">
+
+      <div id="analyzeSection" style="display:none;margin-top:12px;">
+        <button class="btn btn-analyze" id="analyzeBtn" onclick="triggerAnalyze()">
+          🔍 识别食物
+        </button>
+        ${hasKey ? '' : '<div style="font-size:0.72rem;color:#C87050;margin-top:6px;">⚠️ 请先在右上角 ⚙️ 设置 API Key</div>'}
+      </div>
+
+      <div id="analyzeResult"></div>
+    </div>
+
+    <!-- Editable form (hidden until analysis done or manual entry) -->
+    <div class="card" id="foodForm" style="display:none;">
+      <div class="form-group">
+        <label>食物名称</label>
+        <input type="text" id="foodName" placeholder="比如：红烧牛肉面" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>份量</label>
+        <input type="text" id="foodAmount" placeholder="比如：一大碗 / 一份 / 两个">
+      </div>
+      <div class="form-group">
+        <label>热量 (kcal)</label>
+        <input type="number" id="foodCalories" placeholder="估算热量" style="width:100%;">
+      </div>
+      <div class="form-group">
+        <label>餐次</label>
+        <div class="meal-chips" id="mealChips"></div>
+        <input type="hidden" id="mealType" value="${defaultMeal}">
+      </div>
+      <div class="form-group">
+        <label>小备注</label>
+        <textarea id="foodNotes" placeholder="味道怎么样？和谁一起吃的？(◕‿◕)" rows="2"></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="saveFood()">✨ 记录下来</button>
+    </div>`;
+
+      // Render meal chips
+      const chips = document.getElementById('mealChips');
+      MEAL_TYPES.forEach(mt => {
+        const chip = document.createElement('span');
+        chip.className = 'meal-chip' + (mt.key === defaultMeal ? ' selected' : '');
+        chip.textContent = mt.label;
+        chip.onclick = () => {
+          document.querySelectorAll('.meal-chip').forEach(c => c.classList.remove('selected'));
+          chip.classList.add('selected');
+          document.getElementById('mealType').value = mt.key;
+        };
+        chips.appendChild(chip);
+      });
+
+      document.getElementById('photoInput').addEventListener('change', onPhotoSelected);
+    }
+
+    function onPhotoSelected(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = ev => {
+        // Resize for storage
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const maxW = 600;
+          const scale = Math.min(1, maxW / img.width);
+          canvas.width = img.width * scale; canvas.height = img.height * scale;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+          document.getElementById('photoData').value = dataUrl;
+          const preview = document.getElementById('photoPreview');
+          preview.src = dataUrl; preview.classList.add('has-photo');
+          document.getElementById('photoIcon').style.display = 'none';
+          document.getElementById('analyzeSection').style.display = 'block';
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function triggerAnalyze() {
+      const btn = document.getElementById('analyzeBtn');
+      const resultDiv = document.getElementById('analyzeResult');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> AI 正在识别中...';
+      resultDiv.innerHTML = '';
+
+      const imageData = document.getElementById('photoData').value;
+      const result = await analyzeFoodPhoto(imageData);
+
+      btn.disabled = false;
+      btn.innerHTML = '🔍 识别食物';
+
+      if (!result) {
+        // Show manual form anyway
+        document.getElementById('foodForm').style.display = 'block';
+        return;
+      }
+
+      pendingAnalysis = result;
+
+      // Show result card
+      resultDiv.innerHTML = `
+    <div class="result-card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <span style="font-size:2rem;">${randEmoji(result.food)}</span>
+        <div>
+          <div class="food-name">${result.food}</div>
+          <div class="detail">${result.amount} · 约 ${result.calories} kcal · ${MEAL_EMOJI[result.mealType] || ''}</div>
+        </div>
+      </div>
+      <div style="font-size:0.72rem;color:#8B9B8B;">🤖 AI 识别结果，可下方修改</div>
+    </div>`;
+
+      // Auto-fill form
+      document.getElementById('foodForm').style.display = 'block';
+      document.getElementById('foodName').value = result.food;
+      document.getElementById('foodAmount').value = result.amount;
+      document.getElementById('foodCalories').value = result.calories;
+      document.getElementById('mealType').value = result.mealType;
+      // Update meal chips
+      document.querySelectorAll('.meal-chip').forEach(c => {
+        c.classList.toggle('selected', c.textContent === MEAL_LABEL[result.mealType]);
+      });
+      document.getElementById('foodForm').scrollIntoView({ behavior: 'smooth' });
+    }
+
+
+    async function saveFood() {
+      const food = document.getElementById('foodName').value.trim();
+      if (!food) { showToast('请输入食物名称哦~ (｡•́︿•̀｡)'); return; }
+
+      const calInput = parseInt(document.getElementById('foodCalories').value) || 0;
+      let cal = calInput > 0 ? calInput : estimateCalories(food);
+      if (!cal) cal = 200; // default
+
+      const entry = {
+        date: todayStr(),
+        time: nowTime(),
+        mealType: document.getElementById('mealType').value,
+        food: food,
+        amount: document.getElementById('foodAmount').value.trim(),
+        calories: cal,
+        photo: document.getElementById('photoData').value,
+        notes: document.getElementById('foodNotes').value.trim(),
+      };
+
+      await addEntry(entry);
+      showToast('记录好啦！(๑´ڡ`๑) ♡');
+      navigateTo('today');
+    }
+
+    // ─────────────────────────────────────
+    // Calendar Page
+    // ─────────────────────────────────────
+    async function renderCalendar(main) {
+      document.getElementById('headerTitle').textContent = '📅 饮食日历';
+      document.getElementById('headerSub').textContent = formatDate(historyViewDate);
+
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const firstDow = new Date(year, month, 1).getDay();
+      const today = todayStr();
+
+      const dates = await getAllDates();
+      const dateSet = new Set(dates);
+
+      // Day labels
+      const dayLabels = ['日', '一', '二', '三', '四', '五', '六'];
+
+      let html = `<div class="card">
+    <div style="text-align:center;font-weight:700;margin-bottom:10px;">${year}年${month + 1}月</div>
+    <div class="calendar-mini">`;
+
+      for (const dl of dayLabels) html += `<div class="day-label">${dl}</div>`;
+
+      for (let i = 0; i < firstDow; i++) html += '<div></div>';
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const ds = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const cls = ['day-cell'];
+        if (ds === today) cls.push('today');
+        if (dateSet.has(ds)) cls.push('has-record');
+        if (ds === historyViewDate) cls.push('selected');
+        html += `<div class="${cls.join(' ')}" onclick="selectCalendarDate('${ds}')">${d}</div>`;
+      }
+      html += '</div></div>';
+
+      // History list for selected date
+      const entries = await getEntriesByDate(historyViewDate);
+      if (entries.length === 0) {
+        html += `<div class="empty-state"><span class="big-emoji">🍃</span><p>这天没有记录</p></div>`;
+      } else {
+        let dayCal = 0;
+        for (const e of entries) {
+          dayCal += e.calories || 0;
+          html += `
+      <div class="food-row" style="background:var(--card);box-shadow:var(--shadow);">
+        <span class="emoji-big">${randEmoji(e.food)}</span>
+        <div class="info">
+          <div class="name">${e.food}</div>
+          <div class="meta">${e.time} · ${MEAL_EMOJI[e.mealType] || ''} ${MEAL_LABEL[e.mealType] || e.mealType} · ${e.amount || ''}</div>
+        </div>
+        ${e.photo ? `<img class="photo" src="${e.photo}" alt="">` : ''}
+        <div class="cal">${e.calories} kcal</div>
+      </div>`;
+        }
+        html += `<div style="text-align:center;padding:8px;color:var(--text-dim);font-size:0.8rem;">✨ 当日估算总计：${dayCal} kcal</div>`;
+      }
+
+      main.innerHTML = html;
+    }
+
+    async function selectCalendarDate(ds) {
+      historyViewDate = ds;
+      await renderCalendar(document.getElementById('mainContent'));
+    }
+
+    // ─────────────────────────────────────
+    // Stats Page
+    // ─────────────────────────────────────
+    async function renderStats(main) {
+      document.getElementById('headerTitle').textContent = '📊 美食周报';
+      document.getElementById('headerSub').textContent = '看看这周吃了什么~';
+
+      const today = new Date();
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - today.getDay() + 1 + statsWeekOffset * 7);
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+
+      const start = monday.toISOString().split('T')[0];
+      const end = sunday.toISOString().split('T')[0];
+
+      const entries = await getRangeEntries(start, end);
+      const byDate = {}; const foodCount = {}; let totalCal = 0;
+      for (const e of entries) {
+        byDate[e.date] = byDate[e.date] || [];
+        byDate[e.date].push(e);
+        foodCount[e.food] = (foodCount[e.food] || 0) + 1;
+        totalCal += e.calories || 0;
+      }
+      const activeDays = Object.keys(byDate).length;
+      const topFoods = Object.entries(foodCount).sort((a, b) => b[1] - a[1]).slice(0, 3);
+      const avgCal = activeDays > 0 ? Math.round(totalCal / activeDays) : 0;
+
+      // Week nav
+      let html = `<div class="card">
+    <div class="week-nav">
+      <button class="arrow" onclick="changeWeek(-1)">◀</button>
+      <span class="week-title">${start} ~ ${end}</span>
+      <button class="arrow" onclick="changeWeek(1)">▶</button>
+    </div>
+  </div>`;
+
+      html += `<div class="stat-cards">
+    <div class="stat-card pink"><div class="big">${activeDays}</div><div class="lbl">记录天数</div></div>
+    <div class="stat-card purple"><div class="big">${entries.length}</div><div class="lbl">总餐次</div></div>
+    <div class="stat-card mint"><div class="big">${avgCal}</div><div class="lbl">日均热量/kcal</div></div>
+    <div class="stat-card yellow"><div class="big">${totalCal}</div><div class="lbl">周总热量/kcal</div></div>
+  </div>`;
+
+      // Daily breakdown
+      html += `<div class="card"><div style="font-weight:700;margin-bottom:8px;">📋 每日明细</div>`;
+      for (let d = new Date(monday); d <= sunday; d.setDate(d.getDate() + 1)) {
+        const ds = d.toISOString().split('T')[0];
+        const dayEntries = byDate[ds] || [];
+        const dayCal = dayEntries.reduce((s, e) => s + (e.calories || 0), 0);
+        const dayLabel = ['日', '一', '二', '三', '四', '五', '六'][d.getDay()];
+        const indicator = dayEntries.length === 0 ? '🫥' : dayCal > 2000 ? '😋' : dayCal > 1000 ? '😊' : '🫣';
+        html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #F8F0F8;">
+      <span>${ds} 周${dayLabel}</span>
+      <span>${indicator} ${dayEntries.length}餐 · ${dayCal} kcal</span>
+    </div>`;
+      }
+      html += '</div>';
+
+      // Top foods
+      if (topFoods.length > 0) {
+        html += `<div class="card"><div style="font-weight:700;margin-bottom:8px;">🏆 本周最爱</div>`;
+        const ranks = ['gold', 'silver', 'bronze'];
+        topFoods.forEach(([food, count], i) => {
+          const maxCount = topFoods[0][1];
+          const pct = Math.round(count / maxCount * 100);
+          html += `<div class="top-food">
+        <div class="rank ${ranks[i] || ''}">${i + 1}</div>
+        <span style="font-size:0.85rem;width:60px;">${food}</span>
+        <div class="bar-wrap"><div class="bar-fill" style="width:${pct}%">${count}次</div></div>
+      </div>`;
+        });
+        html += '</div>';
+      }
+
+      html += `<div style="text-align:center;padding:12px;color:var(--text-dim);font-size:0.75rem;">✨ 营养数据为粗略估算，仅供参考哦~</div>`;
+
+      main.innerHTML = html;
+    }
+
+    function changeWeek(dir) {
+      statsWeekOffset += dir;
+      renderPage('stats');
+    }
+
+    // ─────────────────────────────────────
+    // Init
+    // ─────────────────────────────────────
+    (async function init() {
+      // Register service worker
+      if ('serviceWorker' in navigator) {
+        try {
+          await navigator.serviceWorker.register('food-diary-sw.js');
+        } catch (e) { /* ok without SW */ }
+      }
+      renderPage('today');
+    })();
+  </script>
+</body>
+
+</html>
