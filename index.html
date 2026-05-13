@@ -1109,11 +1109,19 @@
             messages: [{
               role: 'user',
               content: [
-                { type: 'text', text: '这是一张食物照片。请识别食物并估算信息。只返回纯JSON，不要其他文字。格式：{"food":"食物中文名","amount":"份量描述（如一碗/一份/两个）","calories":数字,"mealType":"breakfast/lunch/snack/dinner/supper"}' },
+                { type: 'text', text: `你是专业营养师。识别照片里最明显的那道食物，只返回JSON。
+
+规则：
+- food：具体菜名，如"红烧牛肉面"而非"面条"
+- amount：用日常量词（一小碗/一大盘/两个/一杯/一串/一小块）
+- calories：估算热量(千卡)。主食200-500，纯肉菜200-400，蔬菜20-80，汤50-200，甜点150-500，饮品5-400，水果50-150，火锅/麻辣烫500-900。注意份量大小调整。
+- mealType：早餐(breakfast)一般是粥/豆浆/包子/面包/蛋/奶类；午餐(lunch)晚餐(dinner)是正餐热菜；加餐(snack)是零食/甜品/水果/奶茶；夜宵(supper)是深夜小吃
+
+格式（只要JSON）：{"food":"","amount":"","calories":0,"mealType":""}` },
                 { type: 'image_url', image_url: { url: imageBase64 } }
               ]
             }],
-            max_completion_tokens: 10000,
+            max_completion_tokens: 300,
           })
         });
 
