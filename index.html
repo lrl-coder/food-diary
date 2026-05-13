@@ -1135,6 +1135,7 @@
 
         const data = await resp.json();
         const text = data.choices?.[0]?.message?.content || '';
+        console.log(data)
         // Extract JSON from response
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (!jsonMatch) { showToast('LLM 返回格式异常，请重试~' + data, 20000); return null; }
