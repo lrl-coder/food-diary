@@ -928,19 +928,103 @@
     const MEAL_EMOJI = Object.fromEntries(MEAL_TYPES.map(m => [m.key, m.emoji]));
     const MEAL_LABEL = Object.fromEntries(MEAL_TYPES.map(m => [m.key, m.label]));
 
-    const FOOD_EMOJI = ['🍚', '🍜', '🍞', '🥟', '🥩', '🍗', '🐟', '🦐', '🥬', '🥗', '🍅', '🥑', '🍎', '🍓', '🍊', '🍰', '🍩', '🧁', '🍫', '🥛', '☕', '🍵', '🧋', '🍲', '🥘', '🍛', '🍣', '🥪', '🥗', '🍿', '🧃'];
-    function randEmoji(food) {
-      if (food.includes('面')) return '🍜'; if (food.includes('饭')) return '🍚';
-      if (food.includes('鸡')) return '🍗'; if (food.includes('鱼')) return '🐟';
-      if (food.includes('虾')) return '🦐'; if (food.includes('牛')) return '🥩';
-      if (food.includes('猪')) return '🥩'; if (food.includes('蛋')) return '🥚';
-      if (food.includes('奶')) return '🥛'; if (food.includes('咖')) return '☕';
-      if (food.includes('茶')) return '🍵'; if (food.includes('果')) return '🍎';
-      if (food.includes('蔬') || food.includes('菜')) return '🥬';
-      if (food.includes('蛋')) return '🍰'; if (food.includes('甜')) return '🧁';
-      if (food.includes('火')) return '🍲'; if (food.includes('堡')) return '🍔';
-      return FOOD_EMOJI[Math.floor(Math.random() * FOOD_EMOJI.length)];
+    const FOOD_EMOJI_MAP = [
+      // 主食
+      ['米饭','炒饭','盖饭','拌饭','饭团','便当','盒饭','饭'],['🍚'],
+      ['面','粉','拉面','拌面','意面','意粉'],['🍜'],
+      ['面包','吐司','三明治'],['🍞'],
+      ['饺子','水饺'],['🥟'],
+      ['包子','馒头','花卷'],['🥟'],
+      ['粥','稀饭','白粥','小米粥'],['🥣'],
+      ['粽子'],['🍙'],
+      ['寿司'],['🍣'],
+      ['披萨','比萨'],['🍕'],
+      ['汉堡'],['🍔'],
+      ['薯条'],['🍟'],
+      ['三明治'],['🥪'],
+      ['饼','烧饼','煎饼','烙饼','大饼'],['🫓'],
+      // 肉类
+      ['鸡','炸鸡','烤鸡'],['🍗'],
+      ['牛','牛排','牛肉'],['🥩'],
+      ['猪','猪肉','红烧肉','排骨','五花肉'],['🥩'],
+      ['羊','羊肉'],['🍖'],
+      ['鱼','烤鱼','红烧鱼','清蒸鱼','水煮鱼'],['🐟'],
+      ['虾','龙虾'],['🦐'],
+      ['蟹','螃蟹'],['🦀'],
+      ['蛋','鸡蛋','煎蛋','炒蛋','煮蛋','蛋花'],['🥚'],
+      ['肠','香肠','腊肠','热狗'],['🌭'],
+      ['培根'],['🥓'],
+      // 蔬菜
+      ['沙拉','生菜'],['🥗'],
+      ['番茄','西红柿'],['🍅'],
+      ['土豆','马铃薯'],['🥔'],
+      ['玉米'],['🌽'],
+      ['西兰花','花椰菜'],['🥦'],
+      ['南瓜'],['🎃'],
+      ['黄瓜'],['🥒'],
+      ['蘑菇'],['🍄'],
+      ['豆腐','豆花'],['🧈'],
+      ['菜','蔬','青菜','白菜','菠菜','油菜','空心菜'],['🥬'],
+      // 水果
+      ['苹果'],['🍎'],
+      ['香蕉'],['🍌'],
+      ['草莓'],['🍓'],
+      ['橙子','橙','橘子','桔子'],['🍊'],
+      ['葡萄'],['🍇'],
+      ['西瓜'],['🍉'],
+      ['蓝莓'],['🫐'],
+      ['猕猴桃','奇异果'],['🥝'],
+      ['芒果'],['🥭'],
+      ['梨'],['🍐'],
+      ['桃'],['🍑'],
+      ['樱桃'],['🍒'],
+      ['水果','果盘'],['🍎'],
+      // 甜点
+      ['蛋糕'],['🍰'],
+      ['冰淇淋','雪糕'],['🍦'],
+      ['甜甜圈'],['🍩'],
+      ['巧克力'],['🍫'],
+      ['布丁'],['🍮'],
+      ['饼干','曲奇'],['🍪'],
+      ['糖果','糖'],['🍬'],
+      ['甜点','甜品','甜'],['🧁'],
+      // 饮品
+      ['咖啡','拿铁','美式','意式'],['☕'],
+      ['奶茶','奶昔'],['🧋'],
+      ['牛奶','酸奶','奶'],['🥛'],
+      ['茶','绿茶','红茶','乌龙','普洱'],['🍵'],
+      ['果汁','橙汁','苹果汁'],['🧃'],
+      ['可乐','汽水','雪碧'],['🥤'],
+      ['啤酒'],['🍺'],
+      ['红酒','葡萄酒'],['🍷'],
+      ['水','白开水','温水','凉白开'],['💧'],
+      // 其他
+      ['火锅'],['🍲'],
+      ['烧烤','烤肉','烤串'],['🍖'],
+      ['麻辣烫'],['🥘'],
+      ['冒菜'],['🥘'],
+      ['炸鸡','炸'],['🍗'],
+      ['汤','羹','煲'],['🍲'],
+      ['坚果','花生','核桃','杏仁','腰果'],['🥜'],
+      ['辣','川'],['🌶️'],
+    ];
+
+    function foodEmoji(food) {
+      if (!food) return '🍽️';
+      for (const [keywords, emoji] of FOOD_EMOJI_MAP) {
+        for (const kw of keywords) {
+          if (food.includes(kw)) return emoji;
+        }
+      }
+      // Deterministic hash fallback — same food always gets same emoji
+      const POOL = ['🍚','🍜','🍞','🥟','🥩','🍗','🐟','🦐','🥬','🥗','🍎','🍰','🧁','🥛','☕','🍲','🥘','🍛','🍣','🥪'];
+      let hash = 0;
+      for (let i=0;i<food.length;i++) hash = ((hash<<5)-hash)+food.charCodeAt(i);
+      return POOL[Math.abs(hash) % POOL.length];
     }
+
+    // Backward compat alias
+    const randEmoji = foodEmoji;
 
     const todayStr = () => new Date().toISOString().split('T')[0];
     const nowTime = () => {
@@ -1121,7 +1205,7 @@
           for (const e of grouped[mt]) {
             html += `
         <div class="food-row">
-          <span class="emoji-big">${randEmoji(e.food)}</span>
+          <span class="emoji-big">${e.emoji || foodEmoji(e.food)}</span>
           <div class="info">
             <div class="name">${e.food}</div>
             <div class="meta">${e.time} · ${e.amount || ''}</div>
@@ -1141,7 +1225,7 @@
       const emojis = [];
       const seen = new Set();
       for (const e of entries) {
-        const em = randEmoji(e.food);
+        const em = e.emoji || foodEmoji(e.food);
         if (!seen.has(em)) { seen.add(em); emojis.push(em); }
         if (emojis.length >= 5) break;
       }
@@ -1286,7 +1370,7 @@
       resultDiv.innerHTML = `
     <div class="result-card">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-        <span style="font-size:2rem;">${randEmoji(result.food)}</span>
+        <span style="font-size:2rem;">${foodEmoji(result.food)}</span>
         <div>
           <div class="food-name">${result.food}</div>
           <div class="detail">${result.amount} · 约 ${result.calories} kcal · ${MEAL_EMOJI[result.mealType] || ''}</div>
@@ -1326,6 +1410,7 @@
         calories: cal,
         photo: document.getElementById('photoData').value,
         notes: document.getElementById('foodNotes').value.trim(),
+        emoji: foodEmoji(food),
       };
 
       await addEntry(entry);
@@ -1381,7 +1466,7 @@
           dayCal += e.calories || 0;
           html += `
       <div class="food-row" style="background:var(--card);box-shadow:var(--shadow);">
-        <span class="emoji-big">${randEmoji(e.food)}</span>
+        <span class="emoji-big">${e.emoji || foodEmoji(e.food)}</span>
         <div class="info">
           <div class="name">${e.food}</div>
           <div class="meta">${e.time} · ${MEAL_EMOJI[e.mealType] || ''} ${MEAL_LABEL[e.mealType] || e.mealType} · ${e.amount || ''}</div>
