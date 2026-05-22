@@ -806,17 +806,17 @@
     <div class="modal-sheet">
       <h3>⚙️ 设置</h3>
       <div class="form-group">
-        <label>OpenAI API Key</label>
-        <input type="password" id="apiKeyInput" placeholder="sk-..." autocomplete="off">
+        <label>AI 代理地址</label>
+        <input type="url" id="apiProxyInput" placeholder="https://your-worker.workers.dev/analyze" autocomplete="off">
         <div style="margin-top:6px;font-size:0.72rem;color:var(--text-dim);">
-          用于 GPT-5 Nano 识别食物照片。Key 只保存在你的浏览器里。
+          GitHub Pages 不能直接请求 OpenAI。请填入你部署的代理地址，API Key 放在代理服务的环境变量里。
         </div>
-        <div id="apiKeyStatus" style="margin-top:6px;"></div>
+        <div id="apiProxyStatus" style="margin-top:6px;"></div>
       </div>
       <div style="display:flex;gap:8px;margin-top:8px;">
         <button class="btn btn-outline" style="flex:1;" onclick="closeSettings()">取消</button>
         <button class="btn" style="flex:1;background:linear-gradient(135deg,#A78BFA,#C084FC);color:#fff;"
-          onclick="saveApiKey()">💾 保存</button>
+          onclick="saveApiProxyUrl()">💾 保存</button>
       </div>
     </div>
   </div>
@@ -1067,31 +1067,41 @@
     }
 
     // ─────────────────────────────────────
-    // Settings & API Key
+    // Settings & AI Proxy
     // ─────────────────────────────────────
-    function getApiKey() { return localStorage.getItem('openai_api_key') || ''; }
+    function getApiProxyUrl() { return localStorage.getItem('openai_proxy_url') || ''; }
+    function normalizeApiProxyUrl(url) {
+      if (!url) return '';
+      try {
+        const parsed = new URL(url);
+        if (!parsed.pathname || parsed.pathname === '/') parsed.pathname = '/analyze';
+        return parsed.toString();
+      } catch {
+        return url;
+      }
+    }
 
     function openSettings() {
-      document.getElementById('apiKeyInput').value = getApiKey();
-      updateApiKeyStatus();
+      document.getElementById('apiProxyInput').value = getApiProxyUrl();
+      updateApiProxyStatus();
       document.getElementById('settingsModal').classList.add('show');
     }
     function closeSettings() {
       document.getElementById('settingsModal').classList.remove('show');
     }
-    function saveApiKey() {
-      const key = document.getElementById('apiKeyInput').value.trim();
-      localStorage.setItem('openai_api_key', key);
-      updateApiKeyStatus();
-      showToast(key ? 'API Key 已保存 ✨' : 'API Key 已清除');
+    function saveApiProxyUrl() {
+      const url = normalizeApiProxyUrl(document.getElementById('apiProxyInput').value.trim());
+      localStorage.setItem('openai_proxy_url', url);
+      updateApiProxyStatus();
+      showToast(url ? 'AI 代理地址已保存 ✨' : 'AI 代理地址已清除');
       closeSettings();
     }
-    function updateApiKeyStatus() {
-      const key = getApiKey();
-      const el = document.getElementById('apiKeyStatus');
-      el.innerHTML = key
+    function updateApiProxyStatus() {
+      const url = getApiProxyUrl();
+      const el = document.getElementById('apiProxyStatus');
+      el.innerHTML = url
         ? '<span class="api-badge set">✅ 已设置</span>'
-        : '<span class="api-badge unset">⚠️ 未设置 — 拍照识别需要 API Key</span>';
+        : '<span class="api-badge unset">⚠️ 未设置 — 拍照识别需要 AI 代理地址</span>';
     }
     document.getElementById('settingsModal').addEventListener('click', function (e) {
       if (e.target === this) closeSettings();
@@ -1101,52 +1111,28 @@
     // OpenAI Food Recognition
     // ─────────────────────────────────────
     async function analyzeFoodPhoto(imageBase64) {
-      const apiKey = getApiKey();
-      if (!apiKey) { showToast('请先在设置里填写 API Key 哦~ ⚙️'); return null; }
+      const proxyUrl = getApiProxyUrl();
+      if (!proxyUrl) { showToast('请先在设置里填写 AI 代理地址哦~ ⚙️'); return null; }
 
       try {
-        const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+        const resp = await fetch(proxyUrl, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            model: 'gpt-5-nano',
-            messages: [{
-              role: 'user',
-              content: [
-                {
-                  type: 'text', text: `你是营养师。识别照片中的食物，只输出一行JSON，不要解释。
-
-正确示例：{"food":"红烧牛肉面","amount":"一大碗","calories":550,"mealType":"lunch"}
-
-food: 完整菜名
-amount: 一小碗/一大盘/两个/一杯/一块/一串
-calories: 千卡。主食200-500 肉类200-400 蔬菜20-80 汤50-200 甜点150-500 饮品5-400 水果50-150 火锅500-900
-mealType: breakfast/lunch/dinner/snack/supper` },
-                { type: 'image_url', image_url: { url: imageBase64 } }
-              ]
-            }],
-            max_completion_tokens: 30000,
+            image: imageBase64
           })
         });
 
         if (!resp.ok) {
           const err = await resp.text();
-          console.error('OpenAI error:', err);
-          showToast('识别失败，检查 API Key 或网络~ (｡•́︿•̀｡)');
+          console.error('AI proxy error:', err);
+          showToast('识别失败，检查 AI 代理地址或服务配置~ (｡•́︿•̀｡)');
           return null;
         }
 
-        const data = await resp.json();
-        const text = data.choices?.[0]?.message?.content || '';
-        console.log(data)
-        // Extract JSON from response
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) { showToast('LLM 返回格式异常，请重试~' + data, 20000); return null; }
-
-        const result = JSON.parse(jsonMatch[0]);
+        const result = await resp.json();
         // Validate
         if (!result.food) { showToast('未能识别食物，请重新拍照~'); return null; }
         return {
@@ -1281,7 +1267,7 @@ mealType: breakfast/lunch/dinner/snack/supper` },
       pendingAnalysis = null;
 
       const defaultMeal = guessMealType();
-      const hasKey = !!getApiKey();
+      const hasProxy = !!getApiProxyUrl();
 
       main.innerHTML = `
     <div style="text-align:center;margin-bottom:12px;">
@@ -1303,7 +1289,7 @@ mealType: breakfast/lunch/dinner/snack/supper` },
         <button class="btn btn-analyze" id="analyzeBtn" onclick="triggerAnalyze()">
           🔍 识别食物
         </button>
-        ${hasKey ? '' : '<div style="font-size:0.72rem;color:#C87050;margin-top:6px;">⚠️ 请先在右上角 ⚙️ 设置 API Key</div>'}
+        ${hasProxy ? '' : '<div style="font-size:0.72rem;color:#C87050;margin-top:6px;">⚠️ 请先在右上角 ⚙️ 设置 AI 代理地址</div>'}
       </div>
 
       <div id="analyzeResult"></div>
